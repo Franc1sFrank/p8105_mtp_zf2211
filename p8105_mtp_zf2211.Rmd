@@ -9,3 +9,29 @@ output: github_document
 library(tidyverse)
 ```
 
+```{r}
+#load data
+atvy <- read.csv("./data/p8105_mtp_data.csv") %>% 
+  janitor::clean_names()
+head(atvy)
+nrow(atvy)
+ncol(atvy)
+```
+```{r}
+#clean data
+
+  
+
+#atvy <- 
+#  atvy %>%
+#  filter(activity_1 == 1) %>% View
+#  group_by()
+#  gather(norm_atvy, day, activity_1:activity_1440) %>% View
+```
+
+test the type
+```{r}
+#count word numbers
+wordcountaddin::text_stats("p8105_mtp_zf2211.Rmd")
+```
+
