@@ -18,20 +18,30 @@ nrow(atvy)
 ncol(atvy)
 ```
 ```{r}
-#clean data
-
-  
-
-#atvy <- 
-#  atvy %>%
-#  filter(activity_1 == 1) %>% View
-#  group_by()
-#  gather(norm_atvy, day, activity_1:activity_1440) %>% View
+# Define normal order of weekdays
+atvy$day <- factor(atvy$day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+#tidy the table
+atvy_tidy <- 
+  atvy %>%
+  gather(key = minute, value = activity, activity_1:activity_1440) %>% 
+  arrange(week, day)
 ```
 
-test the type
+```{r}
+
+```
+
+
+
+```{r}
+#count daily average activity countshhh
+atvy %>% 
+  filter()
+```
+
 ```{r}
 #count word numbers
 wordcountaddin::text_stats("p8105_mtp_zf2211.Rmd")
 ```
 
+From the Data, one minute epoch are common, which means only when the activity in cells == 1 it is normal. When the activity counts are too high, the man would have been physical execrising. So "1" could be regarded as a threshold. 
