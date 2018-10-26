@@ -7,13 +7,13 @@ output: github_document
 
 ```{r}
 library(tidyverse)
+library(ggridges)
 ```
 
 ```{r}
 #load data
 atvy <- read.csv("./data/p8105_mtp_data.csv") %>% 
   janitor::clean_names()
-head(atvy)
 nrow(atvy)
 ncol(atvy)
 ```
@@ -25,18 +25,39 @@ atvy_tidy <-
   atvy %>%
   gather(key = minute, value = activity, activity_1:activity_1440) %>% 
   arrange(week, day)
+nrow(atvy_tidy)
+ncol(atvy_tidy)
 ```
+From the Data, one minute epoch are common, which means only when the activity in cells == 1 it is normal. When the activity counts are too high, the man would have been physical execrising. The dataset after tidy have `r ncol(atvy_tidy)` variables: `week` `day` `minute` `activity` and `r nrow(atvy_tidy)` observations. 
 
 ```{r}
+ggplot(atvy_tidy, aes(x = day, y = activity)) +
+  geom_point()
+```
+From the scatterplot, on 
+```{r}
+ggplot(atvy_tidy, aes(x = week, y = activity)) + 
+  geom_density_2d()
+```
 
+
+```{r fig.height = 10, fig.width = 5}
+ggplot(atvy_tidy, aes(x = activity, y = day, fill = day, height = ..density..)) +
+  geom_density_ridges(scale = 4, stat = "density") +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  scale_x_continuous(expand = c(0.01, 0)) +
+  scale_fill_brewer(palette = 4) + 
+  theme_ridges() + 
+  theme(legend.position = "none")
 ```
 
 
 
 ```{r}
 #count daily average activity countshhh
-atvy %>% 
-  filter()
+atvy_tidy %>% 
+  filter(activity > 1000) %>% 
+  count() / nrow(atvy_tidy)
 ```
 
 ```{r}
@@ -44,4 +65,3 @@ atvy %>%
 wordcountaddin::text_stats("p8105_mtp_zf2211.Rmd")
 ```
 
-From the Data, one minute epoch are common, which means only when the activity in cells == 1 it is normal. When the activity counts are too high, the man would have been physical execrising. So "1" could be regarded as a threshold. 
