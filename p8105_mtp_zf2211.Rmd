@@ -20,6 +20,7 @@ ncol(atvy)
 ```{r}
 # Define normal order of weekdays
 atvy$day <- factor(atvy$day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+atvy$week <- as.factor(atvy$week)
 #tidy the table
 atvy_tidy <- 
   atvy %>%
@@ -31,18 +32,21 @@ ncol(atvy_tidy)
 From the Data, one minute epoch are common, which means only when the activity in cells == 1 it is normal. When the activity counts are too high, the man would have been physical execrising. The dataset after tidy have `r ncol(atvy_tidy)` variables: `week` `day` `minute` `activity` and `r nrow(atvy_tidy)` observations. 
 
 ```{r}
-ggplot(atvy_tidy, aes(x = day, y = activity)) +
+ggplot(atvy_tidy, aes(x = week, y = activity)) +
   geom_point()
 ```
 From the scatterplot, on 
 ```{r}
-ggplot(atvy_tidy, aes(x = week, y = activity)) + 
-  geom_density_2d()
+ggplot(atvy_tidy, aes(x = activity, y = week)) + 
+  geom_density_ridges()
+```
+```{r}
+ggplot(atvy_tidy, aes(x = activity, y = week)) + 
+  geom_density_ridges_gradient()
 ```
 
-
-```{r fig.height = 10, fig.width = 5}
-ggplot(atvy_tidy, aes(x = activity, y = day, fill = day, height = ..density..)) +
+```{r}
+ggplot(atvy_tidy, aes(x = activity, y = week, fill = week, height = ..density..)) +
   geom_density_ridges(scale = 4, stat = "density") +
   scale_y_discrete(expand = c(0.01, 0)) +
   scale_x_continuous(expand = c(0.01, 0)) +
