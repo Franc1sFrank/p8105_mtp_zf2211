@@ -16,9 +16,11 @@ library(gridExtra)
 #load data
 atvy <- read.csv("./data/p8105_mtp_data.csv") %>% 
   janitor::clean_names()
+#the size of original table
 nrow(atvy)
 ncol(atvy)
 ```
+
 ```{r}
 # Define normal order of weekdays
 atvy$day <- factor(atvy$day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
@@ -35,50 +37,72 @@ atvy_tidy <-
   atvy_tidy %>% 
   mutate(hour = ceiling(minute / 60)) 
 ```
+
 From the Data, one minute epoch are common, which means only when the activity in cells == 1 it is normal. When the activity counts are too high, the man would have been physical execrising. The dataset after tidy have `r ncol(atvy_tidy)` variables: `week` `day` `minute` `activity` `hour`and `r nrow(atvy_tidy)` observations. 
 
-```{r}
-ggplot(atvy_tidy, aes(x = day, y = activity)) +
+
+```{r fig.height = 10, fig.width = 9}
+a <- ggplot(atvy_tidy, aes(x = day, y = activity)) +
   labs (title = "fig1. Activity Counts in Everyday in a Week (Scatterplot)") +
   geom_point()
-```
-
-From this scatterplot, activity counts(ACs) are relatively lower on Monday and Tuesday. In this year, outliers are: 1(>10000) on Sunday, 2(~7500) on Monday, 3(~7000, ~8000, ~9000) on Wednesday, 2(~9000) on Thursday, 1(~8000) on Saturday. Which is to say, in a week, the activity decrease from Sunday to Monday, then increase from Tuesday to Wednesday and keep to Saturday.
-
-
-```{r fig.height = 5, fig.width = 9}
-ggplot(atvy_tidy, aes(x = week, y = activity)) +
-  labs (title = "fig2. Activity Counts in Each Week (Scatterplot)") +
+b <- ggplot(atvy_tidy, aes(x = week, y = activity)) +
+  labs (title = "Activity Counts in Each Week (Scatterplot)") +
   geom_point()
+grid.arrange(a, b, nrow = 2)
 ```
-We can see ACs are lowered to 0 on 3rd week. Outliers are on week: 1st(>5000), 4th(~7000), 7th(~8000), 11th(~7500), 14th(~9000), 22nd(~7000), 30th(~4500), 33rd(~7500`*`2), 34th(~5000`*`2), 35th(~5000), 36th(~9000), 38th(~6000), 39th(~9500), 41st(~9000`*`2), 42nd(~6000`*`2), 43rd(~7000), 45th(~7000), 46th(~9000*2), 47(~8000). 
+
+fig 1. From scatterplot above, activity counts(ACs) are relatively lower on Monday and Tuesday. In this year, outliers are: 1(>10000) on Sunday, 2(~7500) on Monday, 3(~7000, ~8000, ~9000) on Wednesday, 2(~9000) on Thursday, 1(~8000) on Saturday. Which is to say, in a week, the activity decrease from Sunday to Monday, then increase from Tuesday to Wednesday and keep to Saturday.
+
+From scatteplot below, we can see ACs are lowered to 0 on 3rd week. Outliers are on week: 1st(>5000), 4th(~7000), 7th(~8000), 11th(~7500), 14th(~9000), 22nd(~7000), 30th(~4500), 33rd(~7500`*`2), 34th(~5000`*`2), 35th(~5000), 36th(~9000), 38th(~6000), 39th(~9500), 41st(~9000`*`2), 42nd(~6000`*`2), 43rd(~7000), 45th(~7000), 46th(~9000*2), 47(~8000). We also can see the trend that as the week goes, the activity count is increasing steadily. 
+
+
+
 ```{r}
 #create total activity variable
-mutate(atvy, total = sum(activity_1:activity_1440))
-
+atvy$total <- rowSums(atvy[, 3:1442])
+atvy_total <- select(atvy, week, day, total) %>% arrange(week, day)
+atvy_total
 ```
 
 Here, variable `total` is the total activity variable of daily activity.
 
+
+
+
 ```{r fig.height = 5, fig.width = 10}
+#show distribution of activity in a week
 ggplot(atvy_tidy, aes(x = activity, y = day)) + 
-  labs (title = "fig3. Activity Counts in Everyday in a Week (Ridgeplot)") +
+  labs(title = "fig2. Activity Counts in Everyday in a Week (Ridgeplot)") +
   geom_density_ridges()
 ```
 
-Over the everyday in a week, most of the activity are around 1. On Tuesday, Wednesday and Thursday, There are small aggregation other than 1. Which means on these three days, the ACs are increased to some extent. That is to say, activity increases from Monday to Tuesday, and decreases from Thursday to Friday.
+Over the everyday in a week, most of the activity are around `1`. On Tuesday, Wednesday and Thursday, There are small aggregation on the right of `1`. Which means on these three days, the ACs are increased to some extent. That is to say, activity increases from Monday to Tuesday, and decreases from Thursday to Friday.
 
+
+
+```{r fig.height = 10, fig.width = 10}
+#change factor into numeric
+atvy_total$week <- as.numeric(atvy_total$week) 
+#take a look at the trend of ACs in each day over the week
+ggplot(atvy_total, aes(x = week, y = total, color = day)) +
+  labs(title = "fig3. Trend of Activity Count in days of a Week") +
+  geom_point(alpha = .7) +
+  geom_smooth(method = "lm", se = FALSE)
+```
+From fig3, all 7 days in a week, the slope rate of trend lines are positive, which means the participant is getting more active. And from Sunday to Monday, the slope decreases, and from Tuesday through Saturday the slope increases, showing that day of week affects activity.
 
 ```{r fig.height = 10, fig.width = 7}
+#show activity distribution weekly in a year
 ggplot(atvy_tidy, aes(x = activity, y = week)) + 
   labs(title = "fig4. Activity Counts in Each Week (Ridges Gradient plot)") +
   geom_density_ridges_gradient()
 ```
 
-In each week, ACs are aggregated around 1. However, from 1 - 47, the peak of 1 is decreasing, in other words, the higher ACs are increasing. Especially, in 16th and 35th week, there are obvious peak other than at 1, which shows ACs increasing. Which is to say, the participant became more active over time.
+In each week, ACs are aggregated around `1`. Observe carefully, from 1 to 47 week, the peak of `1` is decreasing, in other words, the higher ACs are increasing. Especially, in 16th and 35th week, there are obvious peak other than at `1` to the right, which shows ACs is increasing. That is to say, the participant became more active over time.
 
 
 ```{r fig.height = 20, fig.width = 10}
+#Split into 5 group to show daily trend of ACs
 a_week1 <-  atvy_tidy %>% filter(week == 1:10)
 a_week2 <-  atvy_tidy %>% filter(week == 11:20)
 a_week3 <-  atvy_tidy %>% filter(week == 21:30)
@@ -98,13 +122,13 @@ w5 = ggplot(a_week5, aes(x = hour, y = activity, color = week)) +
 grid.arrange(w1, w2, w3, w4, w5, nrow = 5)
 ```
 
-We can see in a whole day(averaged in a week), AC rises in the morning, and grow to a high plateau and extend for about 10 hours and goes down to near 1. Which overlaps the sleep-awake rythm. There is a flat curve in 12th week and even a level line in 3rd week. Maybe these are fault data like the accelerometer defect.
+We can see activity count trend in a whole 24h in each week, AC rises in the morning, and grow to a high plateau and extend for about 10 hours and goes down to near `1`. Which overlaps the sleep-awake rhythm. We can see there are a flat curve in 12th week and even a level line in 3rd week. Maybe these are fault data like the accelerometer defect.
 
 
 
 
 ```{r}
-#count word numbers
+#check word count
 wordcountaddin::text_stats("p8105_mtp_zf2211.Rmd")
 ```
 
